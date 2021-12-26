@@ -18,9 +18,9 @@ from setuptools.command.install import install
 from subprocess import check_call, check_output
 
 # Package meta-data.
-NAME = 'sre-bot'
+NAME = 'sre-bot-zabbix'
 DESCRIPTION = 'Data collector / executor - Site Reliability Framework'
-URL = 'https://github.com/marcwimmer/sre-bot'
+URL = 'https://github.com/marcwimmer/sre-bot-zabbix'
 EMAIL = 'marc@itewimmer.de'
 AUTHOR = 'Marc-Christian Wimmer'
 REQUIRES_PYTHON = '>=3.6.0'
@@ -28,8 +28,7 @@ VERSION = '0.0.1'
 
 # What packages are required for this module to be executed?
 REQUIRED = [
-    "wheel", "simplejson",
-    "paho-mqtt", "click", "croniter", "arrow", "pudb", "pathlib", "pyyaml", "inquirer"
+    "sre-bot", "py_zabbix",
 ]
 
 # What packages are optional?
@@ -102,38 +101,6 @@ class InstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
         install.run(self)
-        self.execute(self.setup_click_autocompletion, args=tuple([]), msg="Setup Click Completion")
-        self.rename_config_files()
-        self.setup_service()
-
-    def rename_config_files(self):
-        path = Path('/etc/sre/autobot.conf')
-        if path.exists():
-            path.rename('/etc/sre/sre.conf')
-
-    def setup_service(self):
-        pass
-
-    def setup_click_autocompletion(self):
-        self.announce("Setting up click autocompletion", level=distutils.log.INFO)
-
-        def setup_for_bash():
-            path = Path("/etc/bash_completion.d")
-            done_bash = False
-            if path.exists():
-                if os.access(path, os.W_OK):
-                    os.system(f"_{NAME.upper()}_COMPLETE=bash_source {NAME} > '{path / NAME}'")
-                    done_bash = True
-            if not done_bash:
-                if not (path / NAME).exists():
-                    bashrc = Path(os.path.expanduser("~")) / '.bashrc'
-                    complete_file = bashrc.parent / f'.{NAME}-completion.sh'
-                    os.system(f"_{NAME.upper()}_COMPLETE=bash_source {NAME} > '{complete_file}'")
-                    if complete_file.name not in bashrc.read_text():
-                        content = bashrc.read_text()
-                        content += '\nsource ' + complete_file.name
-                        bashrc.write_text(content)
-        setup_for_bash()
 
 class UninstallCommand(install):
     def run(self):
@@ -154,12 +121,8 @@ setup(
     #py_modules=['srebot'],
 
     entry_points={
-        'console_scripts': ['sre=srebot:cli'],
     },
     data_files=[
-        "install/sre.conf",
-        "install/sre.service",
-        "install/bot.template.py",
     ],
     install_requires=REQUIRED,
     extras_require=EXTRAS,
