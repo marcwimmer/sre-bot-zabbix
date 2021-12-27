@@ -7,9 +7,12 @@
 import io
 import os
 import sys
+from glob import glob
+import importlib
 import tempfile
 import shutil
 import distutils
+import subprocess
 from shutil import rmtree
 from pathlib import Path
 
@@ -19,6 +22,7 @@ from subprocess import check_call, check_output
 
 # Package meta-data.
 NAME = 'sre-bot-zabbix'
+BOTS_PATH = "sre-bots/" + NAME # e.g. /var/lib/sre-bot/sre-bots/sre-bot-zabbix
 DESCRIPTION = 'Data collector / executor - Site Reliability Framework'
 URL = 'https://github.com/marcwimmer/sre-bot-zabbix'
 EMAIL = 'marc@itewimmer.de'
@@ -100,8 +104,18 @@ class UploadCommand(Command):
 class InstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
+
+        if not os.getenv("VIRTUAL_ENV"):
+            raise Exception("Bots must be installed in virtual env.\n\nExample:\npython3 -m venv /var/lib/sre-bot; . /var/lib/sre-bot/bin/activate")
+
         install.run(self)
 
+        self._add_bots_path()
+
+    def _add_bots_path(self):
+        path = Path(os.environ['VIRTUAL_ENV']) / BOTS_PATH
+        if path.exists():
+            check_call(["sre", "add-bot-path", path])
 class UninstallCommand(install):
     def run(self):
         install.run(self)
@@ -116,13 +130,16 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    # packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     #py_modules=['srebot'],
 
     entry_points={
     },
+    package_data={
+    },
     data_files=[
+        (BOTS_PATH, glob(NAME.replace("-", "_") + "/*")),
     ],
     install_requires=REQUIRED,
     extras_require=EXTRAS,
