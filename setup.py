@@ -104,16 +104,15 @@ class UploadCommand(Command):
 class InstallCommand(install):
     """Post-installation for installation mode."""
     def run(self):
-
-        if not os.getenv("VIRTUAL_ENV"):
-            raise Exception("Bots must be installed in virtual env.\n\nExample:\npython3 -m venv /var/lib/sre-bot; . /var/lib/sre-bot/bin/activate")
-
         install.run(self)
 
         self._add_bots_path()
 
     def _add_bots_path(self):
-        path = Path(os.environ['VIRTUAL_ENV']) / BOTS_PATH
+        if os.getenv("VIRTUAL_ENV"):
+            path = Path(os.environ['VIRTUAL_ENV']) / BOTS_PATH
+        else:
+            path = Path("/usr/local") / BOTS_PATH
         if path.exists():
             check_call(["sre", "add-bot-path", path])
 class UninstallCommand(install):
