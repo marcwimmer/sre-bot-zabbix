@@ -128,6 +128,9 @@ def on_message(client, msg, value):
                 'value': value,
             }
 
+        if not value.get('module'):
+            return
+
         application_name = value['module']
         if application_name:
             application_ids = _get_application(zapi, host_id, application_name)

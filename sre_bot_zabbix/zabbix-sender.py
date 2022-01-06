@@ -5,7 +5,7 @@ from pyzabbix import ZabbixMetric, ZabbixSender
 def on_message(client, msg, value):
     hostname = msg.topic.split("/")[0]
     key = '.'.join(msg.topic.split("/")[1:])
-    if isinstance(value, dict):
+    if isinstance(value, dict) and value.get('timestamp'):
         timestamp = arrow.get(value['timestamp']).timestamp()
         value = value['value'] or ''
     else:
