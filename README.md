@@ -10,13 +10,3 @@ Automatically sets hosts in zabbix and adds trapped items, that can be filled.
 ```bash
 
 ``
-
-# How to upload new version
-  * increase version in setup.py
-  * one time: pipenv install twine --dev
-  * pipenv shell
-  * python3 setup.py upload
-
-# install directly
-
-pip3 install git+https://github.com/marcwimmer/sre-bot`

@@ -79,7 +79,7 @@ class UploadCommand(Command):
     def run(self):
         self.clear_builds()
 
-        self.status('Building Source and Wheel (universal) distribution…')
+        self.status('Building Source…')
         os.system('{0} setup.py sdist'.format(sys.executable))
 
         self.status('Uploading the package to PyPI via Twine…')
