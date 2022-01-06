@@ -113,9 +113,9 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
-    data_files=[
-        (BOTS_PATH, glob(NAME.replace("-", "_") + "/*")),
-    ],
+    package_data={
+        "": ["*.txt"],
+    },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
     include_package_data=True,
