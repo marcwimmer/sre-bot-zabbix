@@ -12,9 +12,13 @@ from shutil import rmtree
 from pathlib import Path
 
 from setuptools.config import read_configuration
-from setuptools import setup, Command
+from setuptools import find_packages, setup, Command
 from setuptools.command.install import install
 from subprocess import check_call, check_output
+
+# HACK to ignore wheel building from pip and just to source distribution
+if 'bdist_wheel' in sys.argv:
+    sys.exit(0)
 
 setup_cfg = read_configuration("setup.cfg")
 metadata = setup_cfg['metadata']
@@ -101,17 +105,14 @@ class InstallCommand(install):
         self._add_bots_path()
 
     def _add_bots_path(self):
-        if os.getenv("VIRTUAL_ENV"):
-            path = Path(os.environ['VIRTUAL_ENV']) / BOTS_PATH
-        else:
-            path = Path("/usr/local") / BOTS_PATH
-        if path.exists():
-            check_call(["sre", "add-bot-path", path])
+        path = Path(self.install_lib) / NAME.replace("-", "_")
+        check_call(["sre", "add-bot-path", path])
 
 setup(
     version=about['__version__'],
     long_description=long_description,
     long_description_content_type='text/markdown',
+    packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     data_files=[
         (BOTS_PATH, glob(NAME.replace("-", "_") + "/*")),
     ],
