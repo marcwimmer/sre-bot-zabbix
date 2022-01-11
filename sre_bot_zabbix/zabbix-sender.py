@@ -7,7 +7,9 @@ def on_message(client, msg, value):
     key = '.'.join(msg.topic.split("/")[1:])
     if isinstance(value, dict) and value.get('timestamp'):
         timestamp = arrow.get(value['timestamp']).timestamp()
-        value = value['value'] or ''
+        value = value['value']
+        if value not in [0, False, 0.0]:
+            value = ''
     else:
         timestamp = None
 
@@ -18,4 +20,3 @@ def on_message(client, msg, value):
     ]
     result = ZabbixSender(use_config=True).send(packet)
     client.logger.debug(result)
-
