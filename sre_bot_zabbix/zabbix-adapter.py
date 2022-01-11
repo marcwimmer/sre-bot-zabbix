@@ -13,7 +13,7 @@ config_file = Path("/etc/sre/zabbix.conf")
 if config_file.exists():
     config = json.loads(config_file.read_text())
 
-def install(parent_path):
+def install():
     if not config_file.exists():
         config_file.write_text(json.dumps({
             'url': 'http://localhost:8080',

@@ -8,7 +8,9 @@ def on_message(client, msg, value):
     if isinstance(value, dict) and value.get('timestamp'):
         timestamp = arrow.get(value['timestamp']).timestamp()
         value = value['value']
-        if value not in [0, False, 0.0]:
+        if value in [0, False, 0.0]:
+            pass
+        elif not value:
             value = ''
     else:
         timestamp = None
