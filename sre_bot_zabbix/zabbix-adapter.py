@@ -122,12 +122,8 @@ def on_message(client, msg, value):
         else:
             host_id = hosts[0]['hostid']
 
-        if isinstance(value, int):
-            value = {
-                'module': None,
-                'value': value,
-            }
-
+        if not isinstance(value, dict):
+            return
         if not value.get('module'):
             return
 
