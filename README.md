@@ -9,4 +9,11 @@ Automatically sets hosts in zabbix and adds trapped items, that can be filled.
 
 ```bash
 
+#/etc/sre/zabbix.conf
+{
+        "user": "autobots",
+        "password": "*************",
+        "url": "https://zabbix.myhost.com"
+}
+
 ``
