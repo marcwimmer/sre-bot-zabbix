@@ -71,7 +71,7 @@ def _get_item(zapi, hostid, item_key):
     })
     return res['result']
 
-def _create_item(zapi, hostid, item_key, name, ttype, applications):
+def _create_item(zapi, hostid, item_key, name, ttype):
     value_type = {
         'char': 1,
         'float': 0,
@@ -86,8 +86,7 @@ def _create_item(zapi, hostid, item_key, name, ttype, applications):
         "hostid": hostid,
         "type": 2, # Zabbix trapper to enable zabbix-send
         "value_type": value_type,
-        "delay": "1s",
-        "applications": applications,
+        "delay": 0,
     })
     item_id = res['result']['itemids'][0]
     return item_id
@@ -127,14 +126,6 @@ def on_message(client, msg, value):
         if not value.get('module'):
             return
 
-        application_name = value['module']
-        if application_name:
-            application_ids = _get_application(zapi, host_id, application_name)
-            if not application_ids:
-                application_ids = _create_application(zapi, host_id, application_name)
-        else:
-            application_ids = []
-
         item = _get_item(zapi, host_id, key)
         if not item:
             value = value['value']
@@ -160,5 +151,5 @@ def on_message(client, msg, value):
             else:
                 ttype = 'char'
 
-            _create_item(zapi, host_id, key, key, ttype, application_ids)
+            _create_item(zapi, host_id, key, key, ttype)
     last_update_info.write_text(str(arrow.get()))
