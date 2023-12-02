@@ -127,8 +127,11 @@ def on_message(client, msg, value):
             return
 
         item = _get_item(zapi, host_id, key)
+        item = [x for x in item if x['name'] == key]
         if not item:
             value = value['value']
+            if isinstance(value, dict):
+                value = value['value']
             try:
                 value = value.decode('utf-8')
             except Exception: pass
