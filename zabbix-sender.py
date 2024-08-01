@@ -1,6 +1,13 @@
 import arrow
-from pyzabbix import ZabbixMetric, ZabbixSender
+import subprocess
+import json
+from pathlib import Path
 
+config_file = Path("/etc/sre/zabbix.conf")
+if config_file.exists():
+    config = json.loads(config_file.read_text())
+
+ip = config['url'].split(":")[1].replace("/", "")
 
 def on_message(client, msg, value):
     hostname = msg.topic.split("/")[0]
@@ -19,8 +26,13 @@ def on_message(client, msg, value):
 
     if isinstance(value, bytes):
         value = value.decode('utf-8')
-    packet = [
-        ZabbixMetric(hostname, key, value, clock=timestamp),
+    url = config['url']
+    command = [
+        "zabbix_sender",
+        "-z", ip,
+        '-s', hostname,
+        '-k', key,
+        '-o', str(value),
     ]
-    result = ZabbixSender(use_config=True).send(packet)
-    client.logger.debug(result)
+    subprocess.run(command, text=True, check=True, capture_output=False)
+    client.logger.debug(f"Sent data to zabbix")
