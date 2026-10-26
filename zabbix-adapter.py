@@ -114,49 +114,53 @@ def on_message(client, msg, value):
 
     zapi = ZabbixAPI(config["url"])
     zapi.login(config["user"], config["password"])
-
-    hosts = _get_hosts(zapi, hostname)
-    if not hosts:
-        host_id = _create_host(zapi, hostname)
-    else:
-        host_id = hosts[0]["hostid"]
-
-    if not isinstance(value, dict):
-        return
-    if not value.get("module"):
-        return
-
-    item = _get_item(zapi, host_id, key)
-    item = [x for x in item if x["name"] == key]
-    if not item:
-        value = value["value"]
-        if isinstance(value, dict):
-            value = value["value"]
-        try:
-            value = value.decode("utf-8")
-        except Exception:
-            pass
-
-        if isinstance(value, str):
-            try:
-                value = int(value)
-            except ValueError:
-                try:
-                    value = float(value)
-                except ValueError:
-                    pass
-
-        if isinstance(value, (int, bool)):
-            ttype = "int"
-        elif isinstance(value, (float,)):
-            ttype = "float"
-        elif len(value or "") > 256:
-            ttype = "log"
+    # Every message logs in, so log out again - otherwise each call leaves an
+    # open session behind in Zabbix.
+    try:
+        hosts = _get_hosts(zapi, hostname)
+        if not hosts:
+            host_id = _create_host(zapi, hostname)
         else:
-            ttype = "char"
+            host_id = hosts[0]["hostid"]
 
-        _create_item(zapi, host_id, key, key, ttype)
-    zapi.session.close()
+        if not isinstance(value, dict):
+            return
+        if not value.get("module"):
+            return
+
+        item = _get_item(zapi, host_id, key)
+        item = [x for x in item if x["name"] == key]
+        if not item:
+            value = value["value"]
+            if isinstance(value, dict):
+                value = value["value"]
+            try:
+                value = value.decode("utf-8")
+            except Exception:
+                pass
+
+            if isinstance(value, str):
+                try:
+                    value = int(value)
+                except ValueError:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
+
+            if isinstance(value, (int, bool)):
+                ttype = "int"
+            elif isinstance(value, (float,)):
+                ttype = "float"
+            elif len(value or "") > 256:
+                ttype = "log"
+            else:
+                ttype = "char"
+
+            _create_item(zapi, host_id, key, key, ttype)
+    finally:
+        zapi.user.logout()
+        zapi.session.close()
     last_update_info.write_text(str(arrow.get()))
 
 

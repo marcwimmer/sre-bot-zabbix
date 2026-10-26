@@ -34,5 +34,8 @@ def on_message(client, msg, value):
         '-k', key,
         '-o', str(value),
     ]
-    subprocess.run(command, text=True, check=True, capture_output=False)
-    client.logger.debug(f"Sent data to zabbix")
+    # zabbix_sender exits non-zero when the server rejects a value (e.g. no
+    # trapper item for that key yet). That is normal for many topics and must
+    # not end up as an error per message in the bot log.
+    res = subprocess.run(command, text=True, capture_output=True)
+    client.logger.debug(f"zabbix_sender rc={res.returncode}: {res.stdout.strip()}")
